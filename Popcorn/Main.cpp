@@ -107,10 +107,12 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 	HWND hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
 		0, 0, window_rect.right - window_rect.left, window_rect.bottom - window_rect.top, nullptr, nullptr, hInstance, nullptr);
 
-   Init_Engine(hWnd);
+
 
    if (hWnd == 0)
       return FALSE;
+
+	Init_Engine(hWnd);
 
    ShowWindow(hWnd, nCmdShow);
    UpdateWindow(hWnd);
@@ -167,23 +169,27 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         PostQuitMessage(0);
         break;
 
-    case WM_KEYDOWN:
-    {
-       switch (wParam)
-       {
-       case VK_LEFT:
-          return On_Key_Down(EKT_Left);
 
-       case VK_RIGHT:
-          return On_Key_Down(EKT_Right);
+	 case WM_KEYDOWN:
+		 switch (wParam)
+		 {
+		 case VK_LEFT:
+			 return On_Key_Down(EKT_Left);
 
-       case VK_SPACE:
-          return On_Key_Down(EKT_Space);
-       }
-    }
+		 case VK_RIGHT:
+			 return On_Key_Down(EKT_Right);
 
- 
-   
+		 case VK_SPACE:
+			 return On_Key_Down(EKT_Space);
+		 }
+		 break;
+
+    case WM_TIMER:
+       if (wParam == Timer_Id)
+          return On_Timer();
+          break;
+
+
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);
     }
