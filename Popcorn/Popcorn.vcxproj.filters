@@ -60,9 +60,6 @@
     <ClInclude Include="Level.h">
       <Filter>Level</Filter>
     </ClInclude>
-    <ClInclude Include="Config.h">
-      <Filter>Config</Filter>
-    </ClInclude>
     <ClInclude Include="Ball.h">
       <Filter>Ball</Filter>
     </ClInclude>
@@ -71,6 +68,9 @@
     </ClInclude>
     <ClInclude Include="Active_Brick.h">
       <Filter>Active_Brick</Filter>
+    </ClInclude>
+    <ClInclude Include="Config.h">
+      <Filter>Config</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
