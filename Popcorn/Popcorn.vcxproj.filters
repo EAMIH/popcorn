@@ -16,9 +16,6 @@
     <Filter Include="Main">
       <UniqueIdentifier>{e597db87-8b54-4caf-aa23-9b0d3517d91e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Engine">
-      <UniqueIdentifier>{d457736a-e30a-479b-9eab-d6de0c33ed25}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Border">
       <UniqueIdentifier>{b9c1119f-a04f-4786-a4f0-93c3e80dc622}</UniqueIdentifier>
     </Filter>
@@ -36,6 +33,9 @@
     </Filter>
     <Filter Include="Active_Brick">
       <UniqueIdentifier>{01907749-3c8a-461b-9a23-31caf44c4ba3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine">
+      <UniqueIdentifier>{d457736a-e30a-479b-9eab-d6de0c33ed25}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -66,11 +66,11 @@
     <ClInclude Include="Platform.h">
       <Filter>Platform</Filter>
     </ClInclude>
-    <ClInclude Include="Active_Brick.h">
-      <Filter>Active_Brick</Filter>
-    </ClInclude>
     <ClInclude Include="Config.h">
       <Filter>Config</Filter>
+    </ClInclude>
+    <ClInclude Include="Active_Brick.h">
+      <Filter>Active_Brick</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

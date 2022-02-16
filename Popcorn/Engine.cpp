@@ -1,17 +1,13 @@
 ﻿#include "Engine.h"
-
-
 // AsEngine
 //------------------------------------------------------------------------------------------------------------
 AsEngine::AsEngine()
-: Hwnd(0)
 {
 }
 //------------------------------------------------------------------------------------------------------------
 void AsEngine::Init_Engine(HWND hwnd)
 {// Настройка игры при старте
-	Hwnd = hwnd;
-
+	AsConfig::Hwnd = hwnd;
 
 	AActive_Brick::Setup_Colors();
 
@@ -20,17 +16,15 @@ void AsEngine::Init_Engine(HWND hwnd)
 	Platform.Init();
 	Border.Init();
 
-
-
-	Platform.Redraw_Platform(Hwnd);
-	SetTimer(Hwnd, Timer_ID, 1000 / AsConfig::FPS, 0);
+	Platform.Set_State(EPS_Roll_In);
+	Platform.Redraw_Platform();
+	SetTimer(AsConfig::Hwnd, Timer_ID, 1000 / AsConfig::FPS, 0);
 }
 //------------------------------------------------------------------------------------------------------------
 void AsEngine::Draw_Frame(HDC hdc, RECT &paint_area)
 {// Отрисовка экрана игры
 
-	Level.Draw(Hwnd, hdc, paint_area);
-	Platform.Draw(hdc, paint_area);
+	Level.Draw(hdc, paint_area);
 
 	//int i;
 
@@ -43,6 +37,7 @@ void AsEngine::Draw_Frame(HDC hdc, RECT &paint_area)
 	Ball.Draw(hdc, paint_area);
 
 	Border.Draw(hdc, paint_area);
+	Platform.Draw(hdc, paint_area);
 }
 //------------------------------------------------------------------------------------------------------------
 int AsEngine::On_Key_Down(EKey_Type key_type)
@@ -55,14 +50,14 @@ int AsEngine::On_Key_Down(EKey_Type key_type)
 		if (Platform.X_Pos <= AsConfig::Border_X_Offset)
 			Platform.X_Pos = AsConfig::Border_X_Offset;
 
-		Platform.Redraw_Platform(Hwnd);
+		Platform.Redraw_Platform();
 		break;
 
 	case EKT_Right:
 		Platform.X_Pos += Platform.X_Step;
 		if (Platform.X_Pos >= AsConfig::Max_X_Pos - Platform.Width + 1)
 			Platform.X_Pos = AsConfig::Max_X_Pos - Platform.Width + 1;
-		Platform.Redraw_Platform(Hwnd);
+		Platform.Redraw_Platform();
 		break;
 
 	case EKT_Space:
@@ -76,11 +71,11 @@ int AsEngine::On_Timer()
 {
 	++AsConfig::Current_Timer_Tick;
 
-	Ball.Move(Hwnd, &Level, Platform.X_Pos, Platform.Width);
-	Level.Active_Brick.Act(Hwnd);
+	Ball.Move(&Level, Platform.X_Pos, Platform.Width);
+	Level.Active_Brick.Act();
 
-	Platform.Act(Hwnd);
-
+	//if (AsConfig::Current_Timer_Tick % 10 == 0)
+		Platform.Act();
 
 	return 0;
 }
