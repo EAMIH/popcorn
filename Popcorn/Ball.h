@@ -34,6 +34,7 @@ public:
 	bool Is_Moving_Up();
 	bool Is_Moving_Left();
 
+
 	double Ball_Speed;
 
 	static void Add_Hit_Checker(AHit_Checker *hit_checker);

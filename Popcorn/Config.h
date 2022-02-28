@@ -26,6 +26,8 @@ public:
 	static HBRUSH BG_Brush;
 	static HWND Hwnd;
 
+	static const double Moving_Step_Size;
+
 	static const int Global_Scale = 3;
 	static const int Border_X_Offset = 6;
 	static const int Border_Y_Offset = 4;
@@ -41,6 +43,7 @@ public:
 	static const int Max_Y_Pos = 199;
 	static const int Platform_Y_Pos = 185;
 	static const int FPS = 20;
+
 
 };
 //------------------------------------------------------------------------------------------------------------
