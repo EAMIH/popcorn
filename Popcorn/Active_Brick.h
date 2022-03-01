@@ -5,16 +5,26 @@
 enum EBrick_Type
 {
 	EBT_None,
+
 	EBT_Red,
-	EBT_Blue
+	EBT_Blue,
+	EBT_Unbreakable,
+	EBT_Multihit_1,
+	EBT_Multihit_2,
+	EBT_Multihit_3,
+	EBT_Multihit_4,
+	EBT_Parachute,
+	EBT_Teleport,
+	EBT_Ad
 };
 //------------------------------------------------------------------------------------------------------------
 class AActive_Brick
 {
 public:
-	AActive_Brick(EBrick_Type brick_type);
+	AActive_Brick(EBrick_Type brick_type, int level_x, int level_y);
 	void Act();
 	void Draw(HDC hdc, RECT &paint_area);
+	bool Is_Finished();
 
 	static void Setup_Colors();
 
@@ -33,8 +43,5 @@ private:
 	static HBRUSH Fading_Red_Brick_Brushes[Max_Fade_Step];
 	static HPEN Fading_Blue_Brick_Pens[Max_Fade_Step];
 	static HBRUSH Fading_Blue_Brick_Brushes[Max_Fade_Step];
-
-
-
 };
 //------------------------------------------------------------------------------------------------------------

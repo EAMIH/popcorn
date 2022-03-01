@@ -1,7 +1,6 @@
 ﻿#pragma once
 #include <Windows.h>
 
-
 #include "Border.h"
 
 #include "Level.h"

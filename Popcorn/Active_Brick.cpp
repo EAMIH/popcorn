@@ -6,9 +6,13 @@ HBRUSH AActive_Brick::Fading_Red_Brick_Brushes[Max_Fade_Step];
 HPEN AActive_Brick::Fading_Blue_Brick_Pens[Max_Fade_Step];
 HBRUSH AActive_Brick::Fading_Blue_Brick_Brushes[Max_Fade_Step];
 //------------------------------------------------------------------------------------------------------------
-AActive_Brick::AActive_Brick(EBrick_Type brick_type)
+AActive_Brick::AActive_Brick(EBrick_Type brick_type, int level_x, int level_y)
 : Fade_Step(0), Brick_Type(brick_type), Brick_Rect{}
 {
+	Brick_Rect.left = (AsConfig::Level_X_Offset + level_x * AsConfig::Cell_Width) * AsConfig::Global_Scale;
+	Brick_Rect.top = (AsConfig::Level_Y_Offset + level_y * AsConfig::Cell_Height) * AsConfig::Global_Scale;
+	Brick_Rect.right = Brick_Rect.left + AsConfig::Brick_Width * AsConfig::Global_Scale;
+	Brick_Rect.bottom = Brick_Rect.top + AsConfig::Brick_Height * AsConfig::Global_Scale;
 }
 //------------------------------------------------------------------------------------------------------------
 void AActive_Brick::Act()
@@ -25,9 +29,9 @@ void AActive_Brick::Draw(HDC hdc, RECT &paint_area)
 	HPEN pen = 0;
 	HBRUSH brush = 0;
 
-
 	switch (Brick_Type)
 	{
+
 	case EBT_Red:
 		pen = Fading_Red_Brick_Pens[Fade_Step];
 		brush = Fading_Red_Brick_Brushes[Fade_Step];
@@ -38,23 +42,23 @@ void AActive_Brick::Draw(HDC hdc, RECT &paint_area)
 		break;
 	}
 
-
 	SelectObject(hdc, pen);
 	SelectObject(hdc, brush);
 
-	Brick_Rect.left = (AsConfig::Level_X_Offset + AsConfig::Cell_Width) * AsConfig::Global_Scale;
-	Brick_Rect.top = (AsConfig::Level_Y_Offset + AsConfig::Cell_Height) * AsConfig::Global_Scale;
-	Brick_Rect.right = Brick_Rect.left + AsConfig::Brick_Width * AsConfig::Global_Scale;
-	Brick_Rect.bottom = Brick_Rect.top + AsConfig::Brick_Height * AsConfig::Global_Scale;
-
-
 	RoundRect(hdc, Brick_Rect.left, Brick_Rect.top, Brick_Rect.right, Brick_Rect.bottom, 2 * AsConfig::Global_Scale, 2 * AsConfig::Global_Scale);
+}
+//------------------------------------------------------------------------------------------------------------
+bool AActive_Brick::Is_Finished()
+{
+	if (Fade_Step >= Max_Fade_Step - 1)
+		return true;
+	else
+		return false;
 }
 //------------------------------------------------------------------------------------------------------------
 void AActive_Brick::Setup_Colors()
 {
 	int i;
-
 
 	for (i = 0; i < Max_Fade_Step; i++)
 	{
