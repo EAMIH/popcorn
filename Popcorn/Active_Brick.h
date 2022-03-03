@@ -22,12 +22,12 @@ class AActive_Brick
 {
 public:
 	AActive_Brick(EBrick_Type brick_type, int level_x, int level_y);
+
 	void Act();
 	void Draw(HDC hdc, RECT &paint_area);
 	bool Is_Finished();
 
 	static void Setup_Colors();
-
 
 private:
 	EBrick_Type Brick_Type;
