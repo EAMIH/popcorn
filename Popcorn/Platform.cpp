@@ -158,6 +158,9 @@ void AsPlatform::Draw(HDC hdc, RECT &paint_area)
 //------------------------------------------------------------------------------------------------------------
 void AsPlatform::Move(bool to_left)
 {
+	if (Platform_State != EPS_Normal)
+		return;
+
 	if (to_left)
 	{
 		X_Pos -= X_Step;
@@ -176,6 +179,18 @@ void AsPlatform::Move(bool to_left)
 
 		Redraw_Platform();
 	}
+}
+//------------------------------------------------------------------------------------------------------------
+bool AsPlatform::Hit_By(AFalling_Letter *falling_letter)
+{
+	RECT intersection_rect, falling_letter_rect;
+
+	falling_letter->Get_Letter_Cell(falling_letter_rect);
+
+	if (IntersectRect(&intersection_rect, &falling_letter_rect, &Platform_Rect) )
+		return true;
+	else
+		return false;
 }
 //------------------------------------------------------------------------------------------------------------
 void AsPlatform::Clear_BG(HDC hdc)
@@ -289,7 +304,6 @@ void AsPlatform::Draw_Meltdown_State(HDC hdc, RECT &paint_area)
 		Meltdown_Platform_Y_Pos[i] += y_offset;
 	}
 
-
 	if (moved_columns_count == 0)
 		Platform_State = EPS_Missing;  // Вся платформа сдвинулась за пределы окна
 }
@@ -313,8 +327,6 @@ void AsPlatform::Draw_Roll_In_State(HDC hdc, RECT &paint_area)
 
 
 	// 2. Разделительная линия
-
-
 	alpha = -2.0 * M_PI / (double)Max_Rolling_Step * (double)Rolling_Step;
 
 	xform.eM11 = (float)cos(alpha);
