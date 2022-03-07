@@ -2,7 +2,7 @@
 // AsEngine
 //------------------------------------------------------------------------------------------------------------
 AsEngine::AsEngine()
-: Game_State(EGS_Play_Level)
+: Game_State(EGS_Lost_Ball)
 {
 }
 //------------------------------------------------------------------------------------------------------------
@@ -32,9 +32,8 @@ void AsEngine::Init_Engine(HWND hwnd)
 
 	Level.Set_Current_Level(AsLevel::Level_01);
 
-	Ball.Set_State(EBS_Normal, Platform.X_Pos + Platform.Width / 2);
-
-	Platform.Set_State(EPS_Normal);
+	//Ball.Set_State(EBS_Normal, Platform.X_Pos + Platform.Width / 2);
+	//Platform.Set_State(EPS_Normal);
 
 	Platform.Redraw_Platform();
 
@@ -44,9 +43,6 @@ void AsEngine::Init_Engine(HWND hwnd)
 void AsEngine::Draw_Frame(HDC hdc, RECT &paint_area)
 {// Отрисовка экрана игры
 
-	//int i;
-	//COLORREF pixel;
-
 	SetGraphicsMode(hdc, GM_ADVANCED);
 
 	Level.Draw(hdc, paint_area);
@@ -54,28 +50,6 @@ void AsEngine::Draw_Frame(HDC hdc, RECT &paint_area)
 	Border.Draw(hdc, paint_area);
 	Platform.Draw(hdc, paint_area);
 	Ball.Draw(hdc, paint_area);
-
-	//for (i = 0; i < 84 * 21 * 100; i++)
-	//{
-	//	pixel = GetPixel(hdc, 100, 100);
-	//	SetPixel(hdc, 100, 100, pixel);
-	//}
-
-	//for (i = 0; i < 84 * 1000; i++)
-	//{
-	//	MoveToEx(hdc, 100, 555, 0);
-
-	//	SelectObject(hdc, AsConfig::BG_Pen);
-	//	LineTo(hdc, 100, 557);
-
-	//	SelectObject(hdc, AsConfig::Brick_Blue_Pen);
-	//	LineTo(hdc, 100, 572);
-
-	//	SelectObject(hdc, AsConfig::BG_Pen);
-	//	LineTo(hdc, 100, 575);
-	//}
-
-	//int yy = 0;
 }
 //------------------------------------------------------------------------------------------------------------
 int AsEngine::On_Key_Down(EKey_Type key_type)
