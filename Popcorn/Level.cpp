@@ -3,10 +3,6 @@
 
 
 
-
-
-
-
 char AsLevel::Level_01[AsConfig::Level_Height][AsConfig::Level_Width] =
 {
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -17,7 +13,7 @@ char AsLevel::Level_01[AsConfig::Level_Height][AsConfig::Level_Width] =
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 	2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-	2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+	2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3,
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -162,8 +158,8 @@ void AsLevel::Draw(HDC hdc, RECT &paint_area)
 
 	int i, j;
 	RECT intersection_rect, brick_rect;
-	AFalling_Letter falling_letter(EBT_Blue, ELT_I, 8 * AsConfig::Global_Scale, 150 * AsConfig::Global_Scale);
-	falling_letter.Test_Draw_All_Steps(hdc);
+	//AFalling_Letter falling_letter(EBT_Blue, ELT_Plus, 8 * AsConfig::Global_Scale, 150 * AsConfig::Global_Scale);
+	//falling_letter.Test_Draw_All_Steps(hdc);
 
 	if (IntersectRect(&intersection_rect, &paint_area, &Level_Rect) )
 	{
@@ -219,6 +215,7 @@ void AsLevel::On_Hit(int brick_x, int brick_y)
 		Current_Level[brick_y][brick_x] = EBT_None;
 	else
 		Add_Active_Brick(brick_x, brick_y, brick_type);
+
 }
 //------------------------------------------------------------------------------------------------------------
 bool AsLevel::Add_Falling_Letter(int brick_x, int brick_y, EBrick_Type brick_type)
@@ -226,6 +223,7 @@ bool AsLevel::Add_Falling_Letter(int brick_x, int brick_y, EBrick_Type brick_typ
 
 	int i;
 	int letter_x, letter_y;
+	ELetter_Type letter_type;
 	AFalling_Letter *falling_letter;
 
 	if (! (brick_type == EBT_Red || brick_type == EBT_Blue) )
@@ -243,7 +241,11 @@ bool AsLevel::Add_Falling_Letter(int brick_x, int brick_y, EBrick_Type brick_typ
 		{
 			letter_x = (brick_x * AsConfig::Cell_Width + AsConfig::Level_X_Offset) * AsConfig::Global_Scale;
 			letter_y = (brick_y * AsConfig::Cell_Height + AsConfig::Level_Y_Offset) * AsConfig::Global_Scale;
-			falling_letter = new AFalling_Letter(brick_type, ELT_G, letter_x, letter_y);
+
+			//letter_type = (ELetter_Type)AsConfig::Rand(ELT_Max - 1);
+			letter_type = AFalling_Letter::Get_Random_Letter_Type();
+
+			falling_letter = new AFalling_Letter(brick_type, letter_type, letter_x, letter_y);
 			Falling_Letters[i] = falling_letter;
 			++Falling_Letters_Count;
 			return true;
@@ -268,12 +270,17 @@ void AsLevel::Add_Active_Brick(int brick_x, int brick_y, EBrick_Type brick_type)
 
 	case EBT_Red:
 	case EBT_Blue:
-		active_brick = new AActive_Brick(brick_type, brick_x, brick_y);
+		active_brick = new AActive_Brick_Red_Blue(brick_type, brick_x, brick_y);
 		Current_Level[brick_y][brick_x] = EBT_None;
 		break;
 
+
+	case EBT_Unbreakable:
+		active_brick = new AActive_Brick_Unbreakable(brick_x, brick_y);
+		break;
+
 	default:
-		return;
+		throw 13;
 	}
 
 	// Добавляем новый активный кирпич на первое свободное место
@@ -353,35 +360,23 @@ bool AsLevel::Check_Horizontal_Hit(double next_x_pos, double next_y_pos, int lev
 //------------------------------------------------------------------------------------------------------------
 void AsLevel::Draw_Brick(HDC hdc, RECT &brick_rect, EBrick_Type brick_type)
 {// Вывод "кирпича"
-
-	HPEN pen;
-	HBRUSH brush;
-
+	
 	switch (brick_type)
 	{
 	case EBT_None:
-		pen = AsConfig::BG_Pen;
-		brush = AsConfig::BG_Brush;
-		break;
-
 	case EBT_Red:
-		pen = AsConfig::Brick_Red_Pen;
-		brush = AsConfig::Brick_Red_Brush;
+	case EBT_Blue:
+		AActive_Brick_Red_Blue::Draw_In_Level(hdc, brick_rect, brick_type);
 		break;
 
-	case EBT_Blue:
-		pen = AsConfig::Brick_Blue_Pen;
-		brush = AsConfig::Brick_Blue_Brush;
+	case EBT_Unbreakable:
+		AActive_Brick_Unbreakable::Draw_In_Level(hdc, brick_rect);
+
 		break;
 
 	default:
-		return;
+		throw 13;
 	}
-
-	SelectObject(hdc, pen);
-	SelectObject(hdc, brush);
-
-	RoundRect(hdc, brick_rect.left, brick_rect.top, brick_rect.right - 1, brick_rect.bottom - 1, 2 * AsConfig::Global_Scale, 2 * AsConfig::Global_Scale);
 }
 //------------------------------------------------------------------------------------------------------------
 void AsLevel::Draw_Objects(HDC hdc, RECT &paint_area, AGraphics_Object **objects_array, int objects_max_count)

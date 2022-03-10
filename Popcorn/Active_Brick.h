@@ -21,6 +21,7 @@ enum EBrick_Type
 class AGraphics_Object
 {
 public:
+	virtual ~AGraphics_Object();
 	virtual void Act() = 0;
 	virtual void Draw(HDC hdc, RECT &paint_area) = 0;
 	virtual bool Is_Finished() = 0;
@@ -28,28 +29,56 @@ public:
 //------------------------------------------------------------------------------------------------------------
 class AActive_Brick: public AGraphics_Object
 {
-public:
+protected:
+	virtual ~AActive_Brick();
 	AActive_Brick(EBrick_Type brick_type, int level_x, int level_y);
+	EBrick_Type Brick_Type;
+	RECT Brick_Rect;
+};
+//------------------------------------------------------------------------------------------------------------
+class AActive_Brick_Red_Blue: public AActive_Brick
+{
+public:
+	~AActive_Brick_Red_Blue();
+	AActive_Brick_Red_Blue(EBrick_Type brick_type, int level_x, int level_y);
 
 	virtual void Act();
 	virtual void Draw(HDC hdc, RECT &paint_area);
 	virtual bool Is_Finished();
 
+	static void Draw_In_Level(HDC hdc, RECT &brick_rect, EBrick_Type brick_type);
+
 	static void Setup_Colors();
+	static void Get_Fading_Color(const AColor &origin_color, int step, AColor &result_color);
 
 private:
-	EBrick_Type Brick_Type;
 	int Fade_Step;
-	RECT Brick_Rect;
-
 	static unsigned char Get_Fading_Channel(unsigned char color, unsigned char bg_color, int step);
-	static void Get_Fading_Color(const AColor &color, int step, HPEN &pen, HBRUSH &brush);
 
 	static const int Max_Fade_Step = AsConfig::FPS;
 
-	static HPEN Fading_Red_Brick_Pens[Max_Fade_Step];
-	static HBRUSH Fading_Red_Brick_Brushes[Max_Fade_Step];
-	static HPEN Fading_Blue_Brick_Pens[Max_Fade_Step];
-	static HBRUSH Fading_Blue_Brick_Brushes[Max_Fade_Step];
+	static AColor Fading_Red_Brick_Colors[Max_Fade_Step];
+	static AColor Fading_Blue_Brick_Colors[Max_Fade_Step];
+};
+//------------------------------------------------------------------------------------------------------------
+class AActive_Brick_Unbreakable: public AActive_Brick
+{
+public:
+	~AActive_Brick_Unbreakable();
+
+	AActive_Brick_Unbreakable(int level_x, int level_y);
+
+	virtual void Act();
+	virtual void Draw(HDC hdc, RECT &paint_area);
+	virtual bool Is_Finished();
+	static void Draw_In_Level(HDC hdc, RECT &brick_rect);
+
+private:
+	int Animation_Step;
+
+	HRGN Region;
+
+	static const int Max_Animation_Step = 12;
+	static AColor Red_Highlight, Blue_Highlight;
 };
 //------------------------------------------------------------------------------------------------------------

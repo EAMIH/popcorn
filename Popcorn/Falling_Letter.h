@@ -5,8 +5,6 @@
 //------------------------------------------------------------------------------------------------------------
 enum ELetter_Type
 {
-	ELT_None,
-
 	ELT_O,  // "Отмена"
 	ELT_I,  // "Инверсия"
 	ELT_C,  // "Скорость"
@@ -14,10 +12,13 @@ enum ELetter_Type
 	ELT_G,  // "Жизнь"
 	ELT_K,  // "Клей"
 	ELT_W,  // "Шире"
-	ELT_P,  // "Пол"
-	ELT_L,  // "Лазер"
 	ELT_T,  // "Три"
-	ELT_Plus  // Переход на следующий уровень
+	ELT_L,  // "Лазер"
+	ELT_P,  // "Пол"
+
+	ELT_Plus,  // Переход на следующий уровень
+
+	ELT_Max
 };
 //------------------------------------------------------------------------------------------------------------
 
@@ -40,14 +41,18 @@ public:
 	void Finalize();
 	void Test_Draw_All_Steps(HDC hdc);
 
+	static void Init();
+	static ELetter_Type Get_Random_Letter_Type();
+
 	const EBrick_Type Brick_Type;
 	const ELetter_Type Letter_Type;
 
 private:
-	void Set_Brick_Letter_Colors(bool is_switch_color, HPEN &front_pen, HBRUSH &front_brush, HPEN &back_pen, HBRUSH &back_brush);
+	void Set_Brick_Letter_Colors(bool is_switch_color, const AColor **front_color, const AColor **back_color);
 	void Draw_Brick_Letter(HDC hdc);
+	void Draw_C(HDC hdc);
 	void Draw_Line(HDC hdc, int x_1, int y_1, int x_2, int y_2);
-
+	void Draw_Line_To(HDC hdc, int x, int y);
 	EFalling_Letter_State Falling_Letter_State;
 	int X, Y;
 	int Rotation_Step;
@@ -58,5 +63,7 @@ private:
 	static const int Max_Rotation_Step = 16;
 	static const int Brick_Half_Height = AsConfig::Brick_Height * AsConfig::Global_Scale / 2;
 
+	static int All_Letters_Popularity;
+	static int Letters_Popularity[ELT_Max];  // "Вес" каждой буквы
 };
 //------------------------------------------------------------------------------------------------------------

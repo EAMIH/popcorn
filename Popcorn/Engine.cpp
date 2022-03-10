@@ -19,12 +19,11 @@ void AsEngine::Init_Engine(HWND hwnd)
 
 	AsConfig::Hwnd = hwnd;
 
-	AActive_Brick::Setup_Colors();
+	AActive_Brick_Red_Blue::Setup_Colors();
 
 	Level.Init();
-	Platform.Init();
-	Ball.Init();
-	Border.Init();
+
+	AFalling_Letter::Init();
 
 	ABall::Add_Hit_Checker(&Border);
 	ABall::Add_Hit_Checker(&Level);
