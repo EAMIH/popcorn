@@ -18,7 +18,14 @@ AColor::AColor(unsigned char r, unsigned char g, unsigned char b)
 AColor::AColor(const AColor &color, int pen_size)
 : R(color.R), G(color.G), B(color.B), Pen(0), Brush(0)
 {
-	Pen = CreatePen(PS_SOLID, pen_size, color.Get_RGB());
+	Pen = CreatePen(PS_SOLID, pen_size, color.Get_RGB() );
+}
+//------------------------------------------------------------------------------------------------------------
+AColor::AColor(const AColor &color_pen, const AColor &color_brush, int pen_size)
+: R(0), G(0), B(0), Pen(0), Brush(0)
+{
+	Pen = CreatePen(PS_SOLID, pen_size, color_pen.Get_RGB() );
+	Brush = CreateSolidBrush(color_brush.Get_RGB());
 }
 //------------------------------------------------------------------------------------------------------------
 int AColor::Get_RGB() const
@@ -48,6 +55,7 @@ HBRUSH AColor::Get_Brush() const
 
 
 
+
 // AsConfig
 bool AsConfig::Level_Has_Floor = false;
 int AsConfig::Current_Timer_Tick = 0;
@@ -56,6 +64,7 @@ const AColor AsConfig::BG_Color(15, 63, 31);
 const AColor AsConfig::Red_Color(255, 85, 85);
 const AColor AsConfig::Blue_Color(85, 255, 255);
 const AColor AsConfig::White_Color(255, 255, 255);
+const AColor AsConfig::Letter_Color(AsConfig::White_Color, AsConfig::Global_Scale);
 
 HWND AsConfig::Hwnd;
 
@@ -67,9 +76,15 @@ int AsConfig::Rand(int range)
 	return rand() * range / RAND_MAX;
 }
 //------------------------------------------------------------------------------------------------------------
-void AsConfig::Round_Rect(HDC hdc, RECT &brick_rect, int corner_size)
+void AsConfig::Round_Rect(HDC hdc, RECT &rect, int corner_radius)
 {
-	int raduis = corner_size * AsConfig::Global_Scale;
-	RoundRect(hdc, brick_rect.left, brick_rect.top, brick_rect.right - 1, brick_rect.bottom - 1, raduis, raduis);
+	int radius = corner_radius * AsConfig::Global_Scale;
+
+	RoundRect(hdc, rect.left, rect.top, rect.right - 1, rect.bottom - 1, radius, radius);
+}
+//------------------------------------------------------------------------------------------------------------
+void AsConfig::Throw()
+{
+	throw 13;
 }
 //------------------------------------------------------------------------------------------------------------

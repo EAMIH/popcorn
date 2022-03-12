@@ -10,6 +10,7 @@ public:
 	AColor();
 	AColor(unsigned char r, unsigned char g, unsigned char b);
 	AColor(const AColor &color, int pen_size);
+	AColor(const AColor &color_pen, const AColor &color_brush, int pen_size);
 
 	int Get_RGB() const;
 	void Select(HDC hdc) const;
@@ -28,11 +29,12 @@ class AsConfig
 public:
 
 	static int Rand(int range);
-	static void Round_Rect(HDC hdc, RECT &brick_rect, int corner_size = 2);
+	static void Round_Rect(HDC hdc, RECT &rect, int corner_radius = 2);
+	static void Throw();
 
 	static bool Level_Has_Floor;
 	static int Current_Timer_Tick;
-	static const AColor BG_Color, Red_Color, Blue_Color, White_Color;
+	static const AColor BG_Color, Red_Color, Blue_Color, White_Color, Letter_Color;
 
 	static HWND Hwnd;
 
@@ -54,7 +56,7 @@ public:
 	static const int Platform_Y_Pos = 185;
 	static const int FPS = 20;
 	static const int Max_Active_Bricks_Count = 10;
-	static const int Hits_Per_Letter = 10;  // Вероятность выбить букву = 1.0 / Hits_Per_Letter
+	static const int Hits_Per_Letter = 1;  // Вероятность выбить букву = 1.0 / Hits_Per_Letter
 	static const int Max_Falling_Letters_Count = 10;
 };
 //------------------------------------------------------------------------------------------------------------

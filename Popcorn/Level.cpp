@@ -13,7 +13,7 @@ char AsLevel::Level_01[AsConfig::Level_Height][AsConfig::Level_Width] =
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 	2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-	2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3,
+	2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 8,
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -48,7 +48,7 @@ char AsLevel::Test_Level[AsConfig::Level_Height][AsConfig::Level_Width] =
 // AsLevel
 //------------------------------------------------------------------------------------------------------------
 AsLevel::AsLevel()
-: Level_Rect{}, Active_Bricks_Count(0), Falling_Letters_Count(0)
+: Level_Rect{}, Active_Bricks_Count(0), Falling_Letters_Count(0), Color_Parachute(AsConfig::Red_Color, AsConfig::Blue_Color, AsConfig::Global_Scale)
 {
 }
 //------------------------------------------------------------------------------------------------------------
@@ -103,7 +103,7 @@ bool AsLevel::Check_Hit(double next_x_pos, double next_y_pos, ABall *ball)
 				else
 					ball->Reflect(false);
 
-				On_Hit(j, i);
+				On_Hit(j, i, ball);
 
 				return true;
 			}
@@ -112,7 +112,7 @@ bool AsLevel::Check_Hit(double next_x_pos, double next_y_pos, ABall *ball)
 				{
 					ball->Reflect(false);
 
-					On_Hit(j, i);
+					On_Hit(j, i, ball);
 
 					return true;
 				}
@@ -121,7 +121,7 @@ bool AsLevel::Check_Hit(double next_x_pos, double next_y_pos, ABall *ball)
 					{
 						ball->Reflect(true);
 
-						On_Hit(j, i);
+						On_Hit(j, i, ball);
 
 						return true;
 					}
@@ -205,17 +205,34 @@ bool AsLevel::Get_Next_Falling_Letter(int &index, AFalling_Letter **falling_lett
 	return false;
 }
 //------------------------------------------------------------------------------------------------------------
-void AsLevel::On_Hit(int brick_x, int brick_y)
+void AsLevel::On_Hit(int brick_x, int brick_y, ABall *ball)
 {
 	EBrick_Type brick_type;
 
 	brick_type = (EBrick_Type)Current_Level[brick_y][brick_x];
 
-	if (Add_Falling_Letter(brick_x, brick_y, brick_type) )
+	if(brick_type == EBT_Parachute)
+	{
+		ball->Set_On_Parashute(brick_x, brick_y);
+		Current_Level[brick_y][brick_x] = EBT_None;
+	}else if (Add_Falling_Letter(brick_x, brick_y, brick_type) )
 		Current_Level[brick_y][brick_x] = EBT_None;
 	else
 		Add_Active_Brick(brick_x, brick_y, brick_type);
 
+	Redraw_Brick(brick_x, brick_y);
+}
+//------------------------------------------------------------------------------------------------------------
+void AsLevel::Redraw_Brick(int brick_x, int brick_y)
+{
+	RECT brick_rect;
+
+	brick_rect.left = (AsConfig::Level_X_Offset + brick_x * AsConfig::Cell_Width) * AsConfig::Global_Scale;
+	brick_rect.top = (AsConfig::Level_Y_Offset + brick_y * AsConfig::Cell_Height) * AsConfig::Global_Scale;
+	brick_rect.right = brick_rect.left + AsConfig::Brick_Width * AsConfig::Global_Scale;
+	brick_rect.bottom = brick_rect.top + AsConfig::Brick_Height * AsConfig::Global_Scale;
+
+	InvalidateRect(AsConfig::Hwnd, &brick_rect, FALSE);
 }
 //------------------------------------------------------------------------------------------------------------
 bool AsLevel::Add_Falling_Letter(int brick_x, int brick_y, EBrick_Type brick_type)
@@ -258,7 +275,7 @@ void AsLevel::Add_Active_Brick(int brick_x, int brick_y, EBrick_Type brick_type)
 {// Создаём активный кирпич, если можем
 
 	int i;
-	AActive_Brick *active_brick;
+	AActive_Brick *active_brick = 0;
 
 	if (Active_Bricks_Count >= AsConfig::Max_Active_Bricks_Count)
 		return;  // Активных кирпичей слишком много!
@@ -279,8 +296,24 @@ void AsLevel::Add_Active_Brick(int brick_x, int brick_y, EBrick_Type brick_type)
 		active_brick = new AActive_Brick_Unbreakable(brick_x, brick_y);
 		break;
 
+	case EBT_Multihit_1:
+		active_brick = new AActive_Brick_Multihit(brick_x, brick_y);
+		Current_Level[brick_y][brick_x] = EBT_None;
+		break;
+
+	case EBT_Multihit_2:
+	case EBT_Multihit_3:
+	case EBT_Multihit_4:
+		Current_Level[brick_y][brick_x] = brick_type - 1;
+		break;
+
+	/*case EBT_Parachute:
+		Current_Level[brick_y][brick_x] = brick_type;
+		break;*/
+
+
 	default:
-		throw 13;
+		AsConfig::Throw();
 	}
 
 	// Добавляем новый активный кирпич на первое свободное место
@@ -360,7 +393,9 @@ bool AsLevel::Check_Horizontal_Hit(double next_x_pos, double next_y_pos, int lev
 //------------------------------------------------------------------------------------------------------------
 void AsLevel::Draw_Brick(HDC hdc, RECT &brick_rect, EBrick_Type brick_type)
 {// Вывод "кирпича"
-	
+
+	const AColor *color = 0;
+
 	switch (brick_type)
 	{
 	case EBT_None:
@@ -371,12 +406,50 @@ void AsLevel::Draw_Brick(HDC hdc, RECT &brick_rect, EBrick_Type brick_type)
 
 	case EBT_Unbreakable:
 		AActive_Brick_Unbreakable::Draw_In_Level(hdc, brick_rect);
-
 		break;
 
+	case EBT_Multihit_1:
+	case EBT_Multihit_2:
+	case EBT_Multihit_3:
+	case EBT_Multihit_4:
+		AActive_Brick_Multihit::Draw_In_Level(hdc, brick_rect, brick_type);
+		break;
+
+
+	case EBT_Parachute:
+		Draw_Parachute_In_Level(hdc, brick_rect);
+			break;
+
 	default:
-		throw 13;
+		AsConfig::Throw();
 	}
+}
+//------------------------------------------------------------------------------------------------------------
+void AsLevel::Draw_Parachute_In_Level(HDC hdc, RECT &brick_rect)
+{
+	Draw_Parachute_Part(hdc, brick_rect, 0, 4);
+	Draw_Parachute_Part(hdc, brick_rect, 4, 6);
+	Draw_Parachute_Part(hdc, brick_rect, 10, 4);
+}
+//------------------------------------------------------------------------------------------------------------
+void AsLevel::Draw_Parachute_Part(HDC hdc, RECT &brick_rect, int x, int width)
+{
+	RECT parachute_rect;
+	int scale = AsConfig::Global_Scale;
+
+	Color_Parachute.Select(hdc);
+
+	parachute_rect.left = brick_rect.left + 1 + x * scale;
+	parachute_rect.top = brick_rect.top + 1;
+	parachute_rect.right = parachute_rect.left + width * scale + 1;
+	parachute_rect.bottom = parachute_rect.top + 3 * scale + 1;
+
+	AsConfig::Round_Rect(hdc, parachute_rect);
+
+	parachute_rect.top += 3 * scale;
+	parachute_rect.bottom += 3 * scale;
+
+	AsConfig::Round_Rect(hdc, parachute_rect);
 }
 //------------------------------------------------------------------------------------------------------------
 void AsLevel::Draw_Objects(HDC hdc, RECT &paint_area, AGraphics_Object **objects_array, int objects_max_count)

@@ -46,14 +46,15 @@ public:
 	virtual void Draw(HDC hdc, RECT &paint_area);
 	virtual bool Is_Finished();
 
+	static void Setup_Colors();
 	static void Draw_In_Level(HDC hdc, RECT &brick_rect, EBrick_Type brick_type);
 
-	static void Setup_Colors();
-	static void Get_Fading_Color(const AColor &origin_color, int step, AColor &result_color);
+
 
 private:
 	int Fade_Step;
 	static unsigned char Get_Fading_Channel(unsigned char color, unsigned char bg_color, int step);
+	static void Get_Fading_Color(const AColor &origin_color, int step, AColor &result_color);
 
 	static const int Max_Fade_Step = AsConfig::FPS;
 
@@ -79,6 +80,26 @@ private:
 	HRGN Region;
 
 	static const int Max_Animation_Step = 12;
-	static AColor Red_Highlight, Blue_Highlight;
+	static AColor Blue_Highlight, Red_Highlight;
+};
+//------------------------------------------------------------------------------------------------------------
+class AActive_Brick_Multihit: public AActive_Brick
+{
+public:
+	~AActive_Brick_Multihit();
+
+	AActive_Brick_Multihit(int level_x, int level_y);
+
+	virtual void Act();
+	virtual void Draw(HDC hdc, RECT &paint_area);
+	virtual bool Is_Finished();
+	static void Draw_In_Level(HDC hdc, RECT &brick_rect, EBrick_Type brick_type);
+
+private:
+	static void Draw_Stage(HDC hdc, RECT &brick_rect, int x, int width);
+	int Rotation_Step;
+
+	static const int Steps_Per_Turn = 16;
+	static const int Max_Rotation_Step = Steps_Per_Turn * 4;
 };
 //------------------------------------------------------------------------------------------------------------

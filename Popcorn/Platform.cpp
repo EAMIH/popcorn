@@ -232,7 +232,7 @@ void AsPlatform::Draw_Normal_State(HDC hdc, RECT &paint_area)
 	inner_rect.bottom = (y + 1 + 5) * AsConfig::Global_Scale;
 
 	AsConfig::Round_Rect(hdc, inner_rect, 3);
-	
+
 	x *= AsConfig::Global_Scale;
 	y *= AsConfig::Global_Scale;
 
@@ -456,7 +456,7 @@ bool AsPlatform::Get_Platform_Image_Stroke_Color(int x, int y, const AColor **co
 	else if (color_value == AsConfig::BG_Color.Get_RGB() )
 		*color = &AsConfig::BG_Color;
 	else
-		throw 13;
+		AsConfig::Throw();
 
 	return true;
 }
