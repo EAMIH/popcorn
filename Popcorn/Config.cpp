@@ -21,11 +21,11 @@ AColor::AColor(const AColor &color, int pen_size)
 	Pen = CreatePen(PS_SOLID, pen_size, color.Get_RGB() );
 }
 //------------------------------------------------------------------------------------------------------------
-AColor::AColor(const AColor &color_pen, const AColor &color_brush, int pen_size)
+AColor::AColor(const AColor &pen_color, const AColor &brush_color, int pen_size)
 : R(0), G(0), B(0), Pen(0), Brush(0)
 {
-	Pen = CreatePen(PS_SOLID, pen_size, color_pen.Get_RGB() );
-	Brush = CreateSolidBrush(color_brush.Get_RGB());
+	Pen = CreatePen(PS_SOLID, pen_size, pen_color.Get_RGB() );
+	Brush = CreateSolidBrush(brush_color.Get_RGB() );
 }
 //------------------------------------------------------------------------------------------------------------
 int AColor::Get_RGB() const

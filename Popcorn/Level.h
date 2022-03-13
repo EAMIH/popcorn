@@ -28,19 +28,20 @@ private:
 	bool Check_Horizontal_Hit(double next_x_pos, double next_y_pos, int level_x, int level_y, ABall *ball, double &reflection_pos);
 	void Draw_Brick(HDC hdc, RECT &brick_rect, EBrick_Type brick_type);
 	void Draw_Parachute_In_Level(HDC hdc, RECT &brick_rect);
-	void Draw_Parachute_Part(HDC hdc, RECT &brick_rect, int x, int width);
+	void Draw_Parachute_Part(HDC hdc, RECT &brick_rect, int offset, int width);
 	void Draw_Objects(HDC hdc, RECT &paint_area, AGraphics_Object **objects_array, int objects_max_count);
 	void Act_Objects(AGraphics_Object **objects_array, int objects_max_count);
 
 	RECT Level_Rect;
 
-	AColor Color_Parachute;
+
 
 	double Current_Brick_Left_X, Current_Brick_Right_X;
 	double Current_Brick_Top_Y, Current_Brick_Low_Y;
 
-	char Current_Level[AsConfig::Level_Height][AsConfig::Level_Width];
+	AColor Parachute_Color;
 
+	char Current_Level[AsConfig::Level_Height][AsConfig::Level_Width];
 	int Active_Bricks_Count;
 	AActive_Brick *Active_Bricks[AsConfig::Max_Active_Bricks_Count];
 	int Falling_Letters_Count;
