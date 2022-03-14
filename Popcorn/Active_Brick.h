@@ -1,6 +1,5 @@
 #pragma once
-
-#include "Config.h"
+#include "Ball.h"
 //------------------------------------------------------------------------------------------------------------
 enum EBrick_Type
 {
@@ -22,6 +21,7 @@ class AGraphics_Object
 {
 public:
 	virtual ~AGraphics_Object();
+
 	virtual void Act() = 0;
 	virtual void Draw(HDC hdc, RECT &paint_area) = 0;
 	virtual bool Is_Finished() = 0;
@@ -31,7 +31,9 @@ class AActive_Brick: public AGraphics_Object
 {
 protected:
 	virtual ~AActive_Brick();
+
 	AActive_Brick(EBrick_Type brick_type, int level_x, int level_y);
+
 	EBrick_Type Brick_Type;
 	RECT Brick_Rect;
 };
@@ -48,8 +50,6 @@ public:
 
 	static void Setup_Colors();
 	static void Draw_In_Level(HDC hdc, RECT &brick_rect, EBrick_Type brick_type);
-
-
 
 private:
 	int Fade_Step;
@@ -72,6 +72,7 @@ public:
 	virtual void Act();
 	virtual void Draw(HDC hdc, RECT &paint_area);
 	virtual bool Is_Finished();
+
 	static void Draw_In_Level(HDC hdc, RECT &brick_rect);
 
 private:
@@ -80,7 +81,6 @@ private:
 	HRGN Region;
 
 	static const int Max_Animation_Step = 12;
-	static AColor Blue_Highlight, Red_Highlight;
 };
 //------------------------------------------------------------------------------------------------------------
 class AActive_Brick_Multihit: public AActive_Brick
@@ -93,6 +93,7 @@ public:
 	virtual void Act();
 	virtual void Draw(HDC hdc, RECT &paint_area);
 	virtual bool Is_Finished();
+
 	static void Draw_In_Level(HDC hdc, RECT &brick_rect, EBrick_Type brick_type);
 
 private:
@@ -101,5 +102,26 @@ private:
 
 	static const int Steps_Per_Turn = 16;
 	static const int Max_Rotation_Step = Steps_Per_Turn * 4;
+};
+//------------------------------------------------------------------------------------------------------------
+class AActive_Brick_Teleport: public AActive_Brick
+{
+public:
+	~AActive_Brick_Teleport();
+
+	AActive_Brick_Teleport(int level_x, int level_y, ABall *ball);
+
+	virtual void Act();
+	virtual void Draw(HDC hdc, RECT &paint_area);
+	virtual bool Is_Finished();
+
+	static void Draw_In_Level(HDC hdc, RECT &brick_rect, int step = 0);
+
+private:
+	int Animation_Step;
+
+	ABall *Ball;
+
+	static const int Max_Animation_Step = 12;
 };
 //------------------------------------------------------------------------------------------------------------
