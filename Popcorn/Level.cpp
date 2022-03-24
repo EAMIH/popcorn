@@ -11,9 +11,9 @@ char AsLevel::Level_01[AsConfig::Level_Height][AsConfig::Level_Width] =
 	2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
 	2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	1, 1, 1, 1, 2, 2, 2, 2, 0, 10,10,0,
-	2, 2, 2, 2, 2, 2, 2, 2, 0, 10,10,0,
-	2, 2, 2, 2, 2, 2, 2, 2, 0, 10,10,0,
+	1, 1, 1, 1, 2, 2, 2, 2, 0, 0, 0, 0,
+	2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0,
+	2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -609,8 +609,9 @@ void AsLevel::Draw_Brick(HDC hdc, RECT &brick_rect, int level_x, int level_y)
 	switch (brick_type)
 	{
 	case EBT_None:
-		if(Advertisement != 0 && Advertisement->Has_Brick_At(level_x, level_y))
+		if (Advertisement != 0 && Advertisement->Has_Brick_At(level_x, level_y) )
 			break;
+		// else - No break!
 
 	case EBT_Red:
 	case EBT_Blue:
