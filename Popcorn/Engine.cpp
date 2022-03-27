@@ -41,18 +41,22 @@ void AsEngine::Init_Engine(HWND hwnd)
 //------------------------------------------------------------------------------------------------------------
 void AsEngine::Draw_Frame(HDC hdc, RECT &paint_area)
 {// Отрисовка экрана игры
+	int i;
 
 	SetGraphicsMode(hdc, GM_ADVANCED);
 
 	Level.Draw(hdc, paint_area);
-
 	Border.Draw(hdc, paint_area);
 	Platform.Draw(hdc, paint_area);
-	Ball.Draw(hdc, paint_area);
+
+	for (i = 0; i < AsConfig::Max_Balls_Count; i++)
+		Balls[i].Draw(hdc, paint_area);
 }
 //------------------------------------------------------------------------------------------------------------
 int AsEngine::On_Key_Down(EKey_Type key_type)
 {
+	int i;
+
 	switch (key_type)
 	{
 	case EKT_Left:
@@ -66,7 +70,9 @@ int AsEngine::On_Key_Down(EKey_Type key_type)
 	case EKT_Space:
 		if (Platform.Get_State() == EPS_Ready)
 		{
-			Ball.Set_State(EBS_Normal, Platform.X_Pos + Platform.Width / 2);
+			for(i = 0; i < AsConfig::Max_Balls_Count; i++)
+				if(Balls[i].Get_State() == EBS_On_Platform)
+					Balls[i].Set_State(EBS_Normal, Platform.X_Pos + Platform.Width / 2, AsConfig::Start_Ball_Y_Pos);
 			Platform.Set_State(EPS_Normal);
 		}
 		break;
@@ -82,22 +88,12 @@ int AsEngine::On_Timer()
 	switch (Game_State)
 	{
 	case EGS_Test_Ball:
-		Ball.Set_For_Test();
+		Balls[0].Set_For_Test();  // В повторяющихся тестах участвует только 0-й мячик
 		Game_State = EGS_Play_Level;
 		break;
 
 	case EGS_Play_Level:
-		Ball.Move();
-
-		if (Ball.Get_State() == EBS_Lost)
-		{
-			Game_State = EGS_Lost_Ball;
-			Platform.Set_State(EPS_Meltdown);
-		}
-
-		if (Ball.Is_Test_Finished() )
-			Game_State = EGS_Test_Ball;
-
+		Play_Level();
 		break;
 
 	case EGS_Lost_Ball:
@@ -107,18 +103,61 @@ int AsEngine::On_Timer()
 			Platform.Set_State(EPS_Roll_In);
 		}
 		break;
+
 	case EGS_Restart_Level:
 		if (Platform.Get_State() == EPS_Ready)
-		{
-			Game_State = EGS_Play_Level;
-			Ball.Set_State(EBS_On_Platform, Platform.X_Pos + Platform.Width / 2);
-		}
+			Restart_Level();
 		break;
 	}
 
 	Act();
 
 	return 0;
+}
+//------------------------------------------------------------------------------------------------------------
+void AsEngine::Restart_Level()
+{
+	int i;
+
+	Game_State = EGS_Play_Level;
+
+	for (i = 0; i < 3; i++)
+		Balls[i].Set_State(EBS_On_Platform, Platform.X_Pos + Platform.Width / 2, AsConfig::Start_Ball_Y_Pos);
+
+	for (; i < AsConfig::Max_Balls_Count; i++)
+		Balls[i].Set_State(EBS_Disabled);
+}
+//------------------------------------------------------------------------------------------------------------
+void AsEngine::Play_Level()
+{
+	int i;
+	int active_balls_count = 0;
+	int lost_balls_count = 0;
+
+	for (i = 0; i < AsConfig::Max_Balls_Count; i++)
+	{
+		if(Balls[i].Get_State() == EBS_Disabled)
+ 			continue;
+		++active_balls_count;
+
+		if (Balls[i].Get_State() == EBS_Lost)
+		{
+			++lost_balls_count;
+			continue;
+		}
+		Balls[i].Move();
+	}
+
+	if(active_balls_count == lost_balls_count)
+	{
+		Game_State = EGS_Lost_Ball;
+		Level.Stop();
+		Platform.Set_State(EPS_Meltdown);
+	}
+
+	if(active_balls_count == 1)
+		if (Balls[0].Is_Test_Finished() )
+			Game_State = EGS_Test_Ball;  // В повторяющихся тестах участвует только 0-й мячик
 }
 //------------------------------------------------------------------------------------------------------------
 void AsEngine::Act()
@@ -139,6 +178,25 @@ void AsEngine::Act()
 //------------------------------------------------------------------------------------------------------------
 void AsEngine::On_Falling_Letter(AFalling_Letter *falling_letter)
 {
+	switch (falling_letter->Letter_Type)
+	{
+	//case ELT_O:  // "Отмена"
+	//case ELT_I:  // "Инверсия"
+	//case ELT_C:  // "Скорость"
+	//case ELT_M:  // "Монстры"
+	//case ELT_G:  // "Жизнь"
+	//case ELT_K:  // "Клей"
+	//case ELT_W:  // "Шире"
+	case ELT_T:  // "Три"
+		break;
+	//case ELT_L:  // "Лазер"
+	//case ELT_P:  // "Пол"
+	//case ELT_Plus:  // Переход на следующий уровень
+
+
+	default:
+		AsConfig::Throw();
+	}
 	falling_letter->Finalize();
 }
 //------------------------------------------------------------------------------------------------------------
