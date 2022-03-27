@@ -54,7 +54,7 @@ AsLevel::~AsLevel()
 }
 //------------------------------------------------------------------------------------------------------------
 AsLevel::AsLevel()
-: Level_Rect{}, Need_Of_Cancel_All(false), Active_Bricks_Count(0), Falling_Letters_Count(0), Teleport_Bricks_Count(0), Teleport_Bricks_Pos(0),
+: Level_Rect{}, Need_To_Cancel_All(false), Active_Bricks_Count(0), Falling_Letters_Count(0), Teleport_Bricks_Count(0), Teleport_Bricks_Pos(0),
   Parachute_Color(AsConfig::Red_Color, AsConfig::Blue_Color, AsConfig::Global_Scale), Advertisement(0)
 {
 }
@@ -232,10 +232,10 @@ void AsLevel::Draw(HDC hdc, RECT &paint_area)
 	if (Advertisement != 0)
 		Advertisement->Clear(hdc, paint_area);
 
-	if(Need_Of_Cancel_All)
+	if (Need_To_Cancel_All)
 	{
 		Cancel_All_Activity();
-		Need_Of_Cancel_All = false;
+		Need_To_Cancel_All = false;
 	}
 
 	// 2. Рисуем все объекты
@@ -288,7 +288,7 @@ bool AsLevel::Get_Next_Falling_Letter(int &index, AFalling_Letter **falling_lett
 //------------------------------------------------------------------------------------------------------------
 void AsLevel::Stop()
 {
-	Need_Of_Cancel_All = true;
+	Need_To_Cancel_All = true;
 }
 //------------------------------------------------------------------------------------------------------------
 bool AsLevel::On_Hit(int brick_x, int brick_y, ABall *ball, bool vertical_hit)
@@ -701,6 +701,22 @@ void AsLevel::Clear_Objects(HDC hdc, RECT &paint_area, AGraphics_Object **object
 	}
 }
 //------------------------------------------------------------------------------------------------------------
+void AsLevel::Delete_Objects(AGraphics_Object **objects_array, int &objects_count, int objects_max_count)
+{
+	int i;
+
+	for (i = 0; i < objects_max_count; i++)
+	{
+		if (objects_array[i] != 0)
+		{
+			delete objects_array[i];
+			objects_array[i] = 0;
+		}
+	}
+
+	objects_count = 0;
+}
+//------------------------------------------------------------------------------------------------------------
 void AsLevel::Draw_Objects(HDC hdc, RECT &paint_area, AGraphics_Object **objects_array, int objects_max_count)
 {
 	int i;
@@ -730,21 +746,6 @@ void AsLevel::Act_Objects(AGraphics_Object **objects_array, int &objects_count, 
 			}
 		}
 	}
-}
-//------------------------------------------------------------------------------------------------------------
-void AsLevel::Delete_Objects(AGraphics_Object **objects_array, int &objects_count, int objects_max_count)
-{
-	int i;
-
-	for (i = 0; i < objects_max_count; i++)
-	{
-		if (objects_array[i] != 0)
-		{
-			delete objects_array[i];
-			objects_array[i] = 0;
-		}
-	}
-	objects_count = 0;
 }
 //------------------------------------------------------------------------------------------------------------
 void AsLevel::Cancel_All_Activity()
