@@ -222,7 +222,12 @@ void AsEngine::On_Falling_Letter(AFalling_Letter *falling_letter)
 		Ball_Set.Triple_Balls();
 		break;
 	//case ELT_L:  // "Лазер"
-	//case ELT_P:  // "Пол"
+	 
+	case ELT_P:  // "Пол"
+		AsConfig::Level_Has_Floor = true; //!!! Отобразить на индикаторе
+		Border.Redraw_Floor();
+		break;
+	 
 	//case ELT_Plus:  // Переход на следующий уровень
 
 
