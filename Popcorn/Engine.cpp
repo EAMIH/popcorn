@@ -35,6 +35,8 @@ void AsEngine::Init_Engine(HWND hwnd)
 	//Ball.Set_State(EBS_Normal, Platform.X_Pos + Platform.Width / 2);
 	//Platform.Set_State(EPS_Normal);
 
+	//Platform.Set_State(EPS_Glue_Init);
+
 	Platform.Redraw_Platform();
 
 	SetTimer(AsConfig::Hwnd, Timer_ID, 1000 / AsConfig::FPS, 0);
@@ -121,6 +123,7 @@ int AsEngine::On_Timer()
 		{
 			Game_State = EGS_Play_Level;
 			Ball_Set.Set_On_Platform(Platform.Get_Middle_Pos() );
+			Platform.Set_State(EPS_Glue_Init);
 		}
 		break;
 	}
