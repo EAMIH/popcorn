@@ -1,6 +1,8 @@
 ﻿#pragma once
 
 #include "Falling_Letter.h"
+#include "Ball_Set.h"
+
 
 //------------------------------------------------------------------------------------------------------------
 enum EPlatform_State
@@ -43,10 +45,12 @@ public:
 	virtual void Draw(HDC hdc, RECT &paint_area);
 	virtual bool Is_Finished();
 
+	void Init(AsBall_Set *ball_set);
 	EPlatform_State Get_State();
 	void Set_State(EPlatform_State new_state);
 	void Redraw_Platform(bool update_rect = true);
 	void Move(bool to_left, bool key_down);
+	void On_Space_Key(bool key_down);
 	bool Hit_By(AFalling_Letter *falling_letter);
 	double Get_Middle_Pos();
 	int Width;
@@ -75,6 +79,8 @@ private:
 
 	double Glue_Spot_Height_Ratio;
 
+	AsBall_Set *Ball_Set;
+
 	int Normal_Platform_Image_Width, Normal_Platform_Image_Height;
 	int *Normal_Platform_Image;  // Пиксели изображения платформы на фоне
 
@@ -85,7 +91,7 @@ private:
 
 	AColor Highlight_Color, Platform_Circle_Color, Platform_Inner_Color;
 
-	static const double Max_Glue_Spot_Height_Ratio;
+	static const double Max_Glue_Spot_Height_Ratio, Min_Glue_Spot_Height_Ratio;
 	static const int Height = 7;
 	static const int Circle_Size = 7;
 	static const int Normal_Platform_Inner_Width = Normal_Width - Circle_Size;

@@ -23,6 +23,7 @@ void AsEngine::Init_Engine(HWND hwnd)
 	AActive_Brick_Red_Blue::Setup_Colors();
 
 	Level.Init();
+	Platform.Init(&Ball_Set);
 
 	AFalling_Letter::Init();
 
@@ -83,12 +84,7 @@ int AsEngine::On_Key(EKey_Type key_type, bool key_down)
 		break;
 
 	case EKT_Space:
-		if (key_down)
-			if (Platform.Get_State() == EPS_Ready)
-			{
-				Ball_Set.Release_From_Platform(Platform.Get_Middle_Pos() );
-				Platform.Set_State(EPS_Normal);
-			}
+		Platform.On_Space_Key(key_down);
 		break;
 	}
 
@@ -123,7 +119,7 @@ int AsEngine::On_Timer()
 		{
 			Game_State = EGS_Play_Level;
 			Ball_Set.Set_On_Platform(Platform.Get_Middle_Pos() );
-			Platform.Set_State(EPS_Glue_Init);
+			//Platform.Set_State(EPS_Glue_Init);
 		}
 		break;
 	}
@@ -207,11 +203,13 @@ void AsEngine::Act()
 	Platform.Act();
 	Level.Act();
 
+	if (Platform.Get_State() != EPS_Ready)
+		Ball_Set.Act();
+
 	while (Level.Get_Next_Falling_Letter(index, &falling_letter) )
 	{
 		if (Platform.Hit_By(falling_letter) )
 			On_Falling_Letter(falling_letter);
-
 	}
 }
 //------------------------------------------------------------------------------------------------------------
@@ -219,7 +217,10 @@ void AsEngine::On_Falling_Letter(AFalling_Letter *falling_letter)
 {
 	switch (falling_letter->Letter_Type)
 	{
-	//case ELT_O:  // "Отмена"
+	case ELT_O:  // "Отмена"
+		Platform.Set_State(EPS_Glue_Finalize);
+		break;  //!!! Пока отменяется только клей!
+
 	case ELT_I:  // "Инверсия"
 		Ball_Set.Inverse_Balls();
 		break;
@@ -231,7 +232,9 @@ void AsEngine::On_Falling_Letter(AFalling_Letter *falling_letter)
 		if (Life_Count < AsConfig::Max_Life_Count)
 			++Life_Count;  //!!! Отобразить на индикаторе!
 		break;
-	//case ELT_K:  // "Клей"
+	case ELT_K:  // "Клей"
+		Platform.Set_State(EPS_Glue_Init);
+		break;
 	//case ELT_W:  // "Шире"
 	case ELT_T:  // "Три"
 		Ball_Set.Triple_Balls();

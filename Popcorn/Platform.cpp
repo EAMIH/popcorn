@@ -2,6 +2,7 @@
 
 // AsPlatform
 const double AsPlatform::Max_Glue_Spot_Height_Ratio = 1.0;
+const double AsPlatform::Min_Glue_Spot_Height_Ratio = 0.4;
 //------------------------------------------------------------------------------------------------------------
 AsPlatform::~AsPlatform()
 {
@@ -11,7 +12,7 @@ AsPlatform::~AsPlatform()
 AsPlatform::AsPlatform()
 : X_Pos(AsConfig::Border_X_Offset), Platform_State(EPS_Missing), Platform_Moving_State(EPMS_Stop), Left_Key_Down(false),
   Right_Key_Down(false), Inner_Width(Normal_Platform_Inner_Width), Rolling_Step(0), Speed(0.0), Glue_Spot_Height_Ratio(0.0),
-  Normal_Platform_Image_Width(0), Normal_Platform_Image_Height(0), Normal_Platform_Image(0), Width(Normal_Width),
+  Ball_Set(0), Normal_Platform_Image_Width(0), Normal_Platform_Image_Height(0), Normal_Platform_Image(0), Width(Normal_Width),
   Platform_Rect{}, Prev_Platform_Rect{}, Highlight_Color(255, 255, 255), Platform_Circle_Color(151, 0, 0), Platform_Inner_Color(0, 128, 192)
 {
 	X_Pos = (AsConfig::Max_X_Pos - Width) / 2;
@@ -23,11 +24,12 @@ bool AsPlatform::Check_Hit(double next_x_pos, double next_y_pos, ABall *ball)
 	double inner_top_y, inner_low_y;
 	double inner_y;
 	double reflection_pos;
+	double ball_x, ball_y;
 
 	if (next_y_pos + ball->Radius < AsConfig::Platform_Y_Pos)
 		return false;
 
-	inner_top_y = (double)(AsConfig::Platform_Y_Pos - 1);
+	inner_top_y = (double)(AsConfig::Platform_Y_Pos + 1);
 	inner_low_y = (double)(AsConfig::Platform_Y_Pos + Height - 1);
 	inner_left_x = (double)(X_Pos + Circle_Size - 1);
 	inner_right_x = (double)(X_Pos + Width - (Circle_Size - 1) );
@@ -56,6 +58,12 @@ bool AsPlatform::Check_Hit(double next_x_pos, double next_y_pos, ABall *ball)
 _on_hit:
 	if (ball->Get_State() == EBS_On_Parachute)
 		ball->Set_State(EBS_Off_Parachute);
+
+	if (Platform_State == EPS_Glue)
+	{
+		ball->Get_Center(ball_x, ball_y);
+		ball->Set_State(EBS_On_Platform, ball_x, ball_y);
+	}
 
 	return true;
 }
@@ -100,6 +108,16 @@ void AsPlatform::Advance(double max_speed)
 		Speed = 0.0;
 		Platform_Moving_State = EPMS_Stopping;
 	}
+
+	// Смещаем приклеенные мячики
+	if (Platform_State == EPS_Ready || Platform_State == EPS_Glue)
+	{
+		if (Platform_Moving_State == EPMS_Moving_Left)
+			Ball_Set->On_Platform_Advance(M_PI, fabs(Speed), max_speed);
+		else
+			if (Platform_Moving_State == EPMS_Moving_Right)
+				Ball_Set->On_Platform_Advance(0.0, fabs(Speed), max_speed);
+	}
 }
 //------------------------------------------------------------------------------------------------------------
 double AsPlatform::Get_Speed()
@@ -120,12 +138,21 @@ void AsPlatform::Act()
 
 	case EPS_Glue_Init:
 		if (Glue_Spot_Height_Ratio < Max_Glue_Spot_Height_Ratio)
-		{
 			Glue_Spot_Height_Ratio += 0.05;
-			Redraw_Platform(false);
-		}
 		else
 			Platform_State = EPS_Glue;
+
+		Redraw_Platform(false);
+
+		break;
+
+	case EPS_Glue_Finalize:
+		if (Glue_Spot_Height_Ratio > Min_Glue_Spot_Height_Ratio)
+			Glue_Spot_Height_Ratio -= 0.05;
+		else
+			Platform_State = EPS_Normal;
+
+		Redraw_Platform(false);
 
 		break;
 
@@ -206,6 +233,11 @@ bool AsPlatform::Is_Finished()
 	return false;  // Заглушка, т.к. этот метод не используется
 }
 //------------------------------------------------------------------------------------------------------------
+void AsPlatform::Init(AsBall_Set *ball_set)
+{
+	Ball_Set = ball_set;
+}
+//------------------------------------------------------------------------------------------------------------
 EPlatform_State AsPlatform::Get_State()
 {
 	return Platform_State;
@@ -237,11 +269,22 @@ void AsPlatform::Set_State(EPlatform_State new_state)
 		break;
 
 	case EPS_Glue_Init:
-		Glue_Spot_Height_Ratio = 0.4;
+		if (Platform_State == EPS_Glue || Platform_State == EPS_Glue_Finalize)
+			return;
+		else
+			Glue_Spot_Height_Ratio = Min_Glue_Spot_Height_Ratio;
 		break;
 
-	//case EPS_Glue:  //!!! Надо сделать
-	//case EPS_Glue_Finalize:  //!!! Надо сделать
+	case EPS_Glue:
+		AsConfig::Throw();  // Такое состояние мы не устанавливаем через Set_State()
+		break;
+
+	case EPS_Glue_Finalize:
+		while (Ball_Set->Release_Next_Ball() )
+		{
+
+		}
+		break;
 	}
 
 	Platform_State = new_state;
@@ -307,6 +350,24 @@ void AsPlatform::Move(bool to_left, bool key_down)
 	{
 		Platform_Moving_State = EPMS_Moving_Right;
 		Speed = X_Step;
+	}
+}
+//------------------------------------------------------------------------------------------------------------
+void AsPlatform::On_Space_Key(bool key_down)
+{
+	if (! key_down)
+		return;
+
+	switch (Get_State() )
+	{
+	case EPS_Ready:
+		Ball_Set->Release_From_Platform(Get_Middle_Pos() );
+		Set_State(EPS_Normal);
+		break;
+
+	case EPS_Glue:
+		Ball_Set->Release_Next_Ball();
+		break;
 	}
 }
 //------------------------------------------------------------------------------------------------------------
