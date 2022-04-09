@@ -78,7 +78,7 @@ void AActive_Brick_Red_Blue::Act()
 	if (Fade_Step < Max_Fade_Step - 1)
 	{
 		++Fade_Step;
-		InvalidateRect(AsConfig::Hwnd, &Brick_Rect, FALSE);
+		AsConfig::Invalidate_Rect(Brick_Rect);
 	}
 }
 //------------------------------------------------------------------------------------------------------------
@@ -189,7 +189,7 @@ void AActive_Brick_Unbreakable::Act()
 	if (Animation_Step <= Max_Animation_Step)
 	{
 		++Animation_Step;
-		InvalidateRect(AsConfig::Hwnd, &Brick_Rect, FALSE);
+		AsConfig::Invalidate_Rect(Brick_Rect);
 	}
 }
 //------------------------------------------------------------------------------------------------------------
@@ -250,7 +250,7 @@ void AActive_Brick_Multihit::Act()
 	if (Rotation_Step <= Max_Rotation_Step)
 	{
 		++Rotation_Step;
-		InvalidateRect(AsConfig::Hwnd, &Brick_Rect, FALSE);
+		AsConfig::Invalidate_Rect(Brick_Rect);
 	}
 }
 //------------------------------------------------------------------------------------------------------------
@@ -395,7 +395,7 @@ void AActive_Brick_Teleport::Act()
 	if (Animation_Step <= Max_Animation_Step)
 	{
 		++Animation_Step;
-		InvalidateRect(AsConfig::Hwnd, &Brick_Rect, FALSE);
+		AsConfig::Invalidate_Rect(Brick_Rect);
 	}
 	else
 	{
@@ -447,7 +447,7 @@ void AActive_Brick_Teleport::Act()
 				Ball->Set_Direction(direction);
 
 				Ball = 0;  // Отмечаем мячик как отсутствующий в телепорте
-				InvalidateRect(AsConfig::Hwnd, &Brick_Rect, FALSE);
+				AsConfig::Invalidate_Rect(Brick_Rect);
 			}
 			break;
 		}
@@ -589,7 +589,7 @@ void AAdvertisement::Act()
 				rect.right = rect.left + cell_width;
 				rect.bottom = rect.top + cell_height;
 
-				InvalidateRect(AsConfig::Hwnd, &rect, FALSE);
+				AsConfig::Invalidate_Rect(rect);
 			}
 
 	// 2. Смещаем шарик
@@ -773,11 +773,7 @@ AActive_Brick_Ad::AActive_Brick_Ad(int level_x, int level_y, AAdvertisement *adv
 //------------------------------------------------------------------------------------------------------------
 void AActive_Brick_Ad::Act()
 {
-	//if (Animation_Step <= Max_Animation_Step)
-	//{
-	//	++Animation_Step;
-		InvalidateRect(AsConfig::Hwnd, &Brick_Rect, FALSE);
-	//}
+	AsConfig::Invalidate_Rect(Brick_Rect);
 }
 //------------------------------------------------------------------------------------------------------------
 void AActive_Brick_Ad::Draw(HDC hdc, RECT &paint_area)
