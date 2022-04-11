@@ -107,15 +107,15 @@ int AsEngine::On_Timer()
 		break;
 
 	case EGS_Lost_Ball:
-		if (Platform.Get_State() == EPS_Missing)
+		if (Platform.Has_State(EPlatform_Substate_Regular::Missing) )
 		{
 			Game_State = EGS_Restart_Level;
-			Platform.Set_State(EPS_Roll_In);
+			Platform.Set_State(EPlatform_State::Rolling);
 		}
 		break;
 
 	case EGS_Restart_Level:
-		if (Platform.Get_State() == EPS_Ready)
+		if (Platform.Has_State(EPlatform_Substate_Regular::Ready) )
 		{
 			Game_State = EGS_Play_Level;
 			Ball_Set.Set_On_Platform(Platform.Get_Middle_Pos() );
@@ -138,7 +138,7 @@ void AsEngine::Play_Level()
 
 		Game_State = EGS_Lost_Ball;
 		Level.Stop();
-		Platform.Set_State(EPS_Pre_Meltdown);
+		Platform.Set_State(EPlatform_State::Meltdown);
 	}
 	else
 		Ball_Set.Accelerate();
@@ -203,7 +203,7 @@ void AsEngine::Act()
 	Platform.Act();
 	Level.Act();
 
-	if (Platform.Get_State() != EPS_Ready)
+	if (! Platform.Has_State(EPlatform_Substate_Regular::Ready) )
 		Ball_Set.Act();
 
 	while (Level.Get_Next_Falling_Letter(index, &falling_letter) )
@@ -218,29 +218,29 @@ void AsEngine::On_Falling_Letter(AFalling_Letter *falling_letter)
 	switch (falling_letter->Letter_Type)
 	{
 	case ELT_O:  // "Отмена"
-		Platform.Set_State(EPS_Normal);
+		Platform.Set_State(EPlatform_Substate_Regular::Normal);
 		break;  //!!! Пока отменяется только клей!
 
 	case ELT_I:  // "Инверсия"
 		Ball_Set.Inverse_Balls();
-		Platform.Set_State(EPS_Normal);
+		Platform.Set_State(EPlatform_Substate_Regular::Normal);
 		break;
 	case ELT_C:  // "Скорость"
 		Ball_Set.Reset_Speed();
-		Platform.Set_State(EPS_Normal);
+		Platform.Set_State(EPlatform_Substate_Regular::Normal);
 		break;
 	//case ELT_M:  // "Монстры"
 	case ELT_G:  // "Жизнь"
 		if (Life_Count < AsConfig::Max_Life_Count)
 			++Life_Count;  //!!! Отобразить на индикаторе!
-		Platform.Set_State(EPS_Normal);
+		Platform.Set_State(EPlatform_Substate_Regular::Normal);
 		break;
 	case ELT_K:  // "Клей"
-		Platform.Set_State(EPS_Glue);
+		Platform.Set_State(EPlatform_State::Glue);
 		break;
 	//case ELT_W:  // "Шире"
 	case ELT_T:  // "Три"
-		Platform.Set_State(EPS_Normal);
+		Platform.Set_State(EPlatform_Substate_Regular::Normal);
 		Ball_Set.Triple_Balls();
 		break;
 	//case ELT_L:  // "Лазер"
@@ -249,7 +249,7 @@ void AsEngine::On_Falling_Letter(AFalling_Letter *falling_letter)
 		AsConfig::Level_Has_Floor = true;
 		Border.Redraw_Floor();
 		//!!! Отобразить на индикаторе!
-		Platform.Set_State(EPS_Normal);
+		Platform.Set_State(EPlatform_Substate_Regular::Normal);
 		break;
 
 
