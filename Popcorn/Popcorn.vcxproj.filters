@@ -13,9 +13,6 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Main">
-      <UniqueIdentifier>{e597db87-8b54-4caf-aa23-9b0d3517d91e}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Border">
       <UniqueIdentifier>{b9c1119f-a04f-4786-a4f0-93c3e80dc622}</UniqueIdentifier>
     </Filter>
@@ -42,6 +39,9 @@
     </Filter>
     <Filter Include="Ball_Set">
       <UniqueIdentifier>{6f972a78-1ba5-47d2-b3af-ba13ec1769af}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Main">
+      <UniqueIdentifier>{e597db87-8b54-4caf-aa23-9b0d3517d91e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

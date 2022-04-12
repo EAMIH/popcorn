@@ -10,7 +10,8 @@ enum class EPlatform_State: unsigned char
 	Regular,
 	Meltdown,
 	Rolling,
-	Glue
+	Glue,
+	Expanding
 };
 //------------------------------------------------------------------------------------------------------------
 enum class EPlatform_Substate_Regular: unsigned char
@@ -47,6 +48,15 @@ enum class EPlatform_Substate_Glue: unsigned char
 	Finalize
 };
 //------------------------------------------------------------------------------------------------------------
+enum class EPlatform_Substate_Expanding: unsigned char
+{
+	Unknown,
+
+	Init,
+	Active,
+	Finalize
+};
+//------------------------------------------------------------------------------------------------------------
 enum class EPlatform_Moving_State: unsigned char
 {
 	Stopping,
@@ -67,8 +77,10 @@ public:
 	EPlatform_Substate_Meltdown Meltdown;
 	EPlatform_Substate_Rolling Rolling;
 	EPlatform_Substate_Glue Glue;
+	EPlatform_Substate_Expanding Expanding;
 
 	EPlatform_Moving_State Moving;
+
 private:
 	EPlatform_State Current_State;
 
@@ -116,6 +128,9 @@ private:
 	void Draw_Roll_In_State(HDC hdc, RECT &paint_area);
 	void Draw_Glue_State(HDC hdc, RECT &paint_area);
 	void Draw_Glue_Spot(HDC hdc, int x_offset, int width, int height);
+	void Draw_Expanding_State(HDC hdc, RECT &paint_area);
+	void Draw_Expanding_Platform_Ball(HDC hdc, bool is_left);
+	void Draw_Expanding_Truss(HDC hdc, RECT &inner_rect, bool is_left);
 	bool Reflect_On_Circle(double next_x_pos, double next_y_pos, double platform_ball_x_offset, ABall *ball);
 	bool Get_Platform_Image_Stroke_Color(int x, int y, const AColor **color, int &stroke_len);
 	void Get_Normal_Platform_Image(HDC hdc);
@@ -129,6 +144,7 @@ private:
 	double Speed;
 
 	double Glue_Spot_Height_Ratio;
+	double Expanding_Platform_Width;
 
 	AsBall_Set *Ball_Set;
 
@@ -140,12 +156,14 @@ private:
 
 	RECT Platform_Rect, Prev_Platform_Rect;
 
-	AColor Highlight_Color, Platform_Circle_Color, Platform_Inner_Color;
+	AColor Highlight_Color, Platform_Circle_Color, Platform_Inner_Color, Truss_Color;
 
 	static const double Max_Glue_Spot_Height_Ratio, Min_Glue_Spot_Height_Ratio, Glue_Spot_Height_Ratio_Step;
+	static const double Max_Expanding_Platform_Width, Min_Expanding_Platform_Width, Expanding_Platform_Width_Step;
 	static const int Height = 7;
 	static const int Circle_Size = 7;
 	static const int Normal_Platform_Inner_Width = Normal_Width - Circle_Size;
+	static const int Expanding_Platform_Inner_Width = 12;
 	static const int Meltdown_Speed = 3;
 	static const int Max_Rolling_Step = 16;
 	static const int Roll_In_Platform_End_X_Pos = 99;
