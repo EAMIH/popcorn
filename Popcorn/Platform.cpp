@@ -5,7 +5,8 @@
 AsPlatform_State::AsPlatform_State()
 : Current_State(EPlatform_State::Regular), Next_State(EPlatform_State::Unknown), Regular(EPlatform_Substate_Regular::Missing),
   Meltdown(EPlatform_Substate_Meltdown::Unknown), Rolling(EPlatform_Substate_Rolling::Unknown),
-  Glue(EPlatform_Substate_Glue::Unknown), Expanding(EPlatform_Substate_Expanding::Unknown), Moving(EPlatform_Moving_State::Stop)
+  Glue(EPlatform_Substate_Glue::Unknown), Expanding(EPlatform_Substate_Expanding::Unknown),
+  Laser(EPlatform_Substate_Laser::Unknown), Moving(EPlatform_Moving_State::Stop)
 {
 }
 //------------------------------------------------------------------------------------------------------------
@@ -45,6 +46,10 @@ void AsPlatform_State::Set_Next_State(EPlatform_State next_state)
 		Expanding = EPlatform_Substate_Expanding::Finalize;
 		break;
 
+	case EPlatform_State::Laser:
+		Laser = EPlatform_Substate_Laser::Finalize;
+		break;
+
 	default:
 		AsConfig::Throw();
 	}
@@ -76,11 +81,12 @@ AsPlatform::~AsPlatform()
 //------------------------------------------------------------------------------------------------------------
 AsPlatform::AsPlatform()
 : X_Pos(AsConfig::Border_X_Offset), Left_Key_Down(false),
-  Right_Key_Down(false), Inner_Width(Normal_Platform_Inner_Width), Rolling_Step(0), Last_Redraw_Timer_Tick(0), Speed(0.0),
-  Glue_Spot_Height_Ratio(0.0), Expanding_Platform_Width(0.0), Ball_Set(0), Normal_Platform_Image_Width(0),
-  Normal_Platform_Image_Height(0), Normal_Platform_Image(0),
+  Right_Key_Down(false), Inner_Width(Normal_Platform_Inner_Width), Rolling_Step(0), Laser_Transformation_Step(0),
+  Last_Redraw_Timer_Tick(0), Speed(0.0), Glue_Spot_Height_Ratio(0.0), Expanding_Platform_Width(0.0), Ball_Set(0),
+  Normal_Platform_Image_Width(0), Normal_Platform_Image_Height(0), Normal_Platform_Image(0),
   Platform_Rect{}, Prev_Platform_Rect{}, Highlight_Color(255, 255, 255), Platform_Circle_Color(151, 0, 0),
-  Platform_Inner_Color(0, 128, 192), Truss_Color(Platform_Inner_Color, AsConfig::Global_Scale)
+  Platform_Inner_Color(0, 128, 192), Truss_Color(Platform_Inner_Color, AsConfig::Global_Scale),
+  Gun_Color(Highlight_Color, AsConfig::Global_Scale)
 {
 	X_Pos = (AsConfig::Max_X_Pos - Normal_Width) / 2;
 }
@@ -204,6 +210,10 @@ void AsPlatform::Act()
 	case EPlatform_State::Expanding:
 		Act_For_Expanding_State();
 		break;
+
+	case EPlatform_State::Laser:
+		Act_For_Laser_State();
+		break;
 	}
 }
 //------------------------------------------------------------------------------------------------------------
@@ -226,6 +236,7 @@ void AsPlatform::Clear(HDC hdc, RECT &paint_area)
 	case EPlatform_State::Rolling:
 	case EPlatform_State::Glue:
 	case EPlatform_State::Expanding:
+	case EPlatform_State::Laser:
 		// Очищаем фоном прежнее место
 		AsConfig::BG_Color.Select(hdc);
 		Rectangle(hdc, Prev_Platform_Rect.left, Prev_Platform_Rect.top, Prev_Platform_Rect.right, Prev_Platform_Rect.bottom);
@@ -261,6 +272,10 @@ void AsPlatform::Draw(HDC hdc, RECT &paint_area)
 
 	case EPlatform_State::Expanding:
 		Draw_Expanding_State(hdc, paint_area);
+		break;
+
+	case EPlatform_State::Laser:
+		Draw_Laser_State(hdc, paint_area);
 		break;
 
 	}
@@ -353,7 +368,25 @@ void AsPlatform::Set_State(EPlatform_State new_state)
 			Expanding_Platform_Width = Min_Expanding_Platform_Width;
 		}
 		break;
+
+	case EPlatform_State::Laser:
+		if (Platform_State != EPlatform_State::Regular)
+		{
+			Platform_State.Set_Next_State(new_state);
+			return;
+		}
+
+		if (Platform_State.Laser == EPlatform_Substate_Laser::Finalize)
+			return;
+		else
+		{
+			Platform_State.Laser = EPlatform_Substate_Laser::Init;
+			Laser_Transformation_Step = 0;
+		}
+
+		break;
 	}
+
 
 	Platform_State = new_state;
 }
@@ -382,6 +415,14 @@ void AsPlatform::Set_State(EPlatform_Substate_Regular new_regular_state)
 				Set_Next_Or_Regular_State(new_regular_state);  // Финализация состояния закончилась
 			else
 				Platform_State.Expanding = EPlatform_Substate_Expanding::Finalize;  // Запускаем финализацию состояния
+
+			return;
+
+		case EPlatform_State::Laser:
+			if (Platform_State.Laser == EPlatform_Substate_Laser::Unknown)
+				Set_Next_Or_Regular_State(new_regular_state);  // Финализация состояния закончилась
+			else
+				Platform_State.Laser = EPlatform_Substate_Laser::Finalize;  // Запускаем финализацию состояния
 
 			return;
 		}
@@ -425,7 +466,7 @@ void AsPlatform::Redraw_Platform()
 void AsPlatform::Move(bool to_left, bool key_down)
 {
 	if (! (Has_State(EPlatform_Substate_Regular::Normal) || Platform_State == EPlatform_State::Glue
-		|| Platform_State == EPlatform_State::Expanding) )
+		|| Platform_State == EPlatform_State::Expanding|| Platform_State == EPlatform_State::Laser) )
 		return;
 
 	if (to_left)
@@ -469,6 +510,8 @@ void AsPlatform::On_Space_Key(bool key_down)
 	else
 		if (Platform_State == EPlatform_State::Glue)
 			Ball_Set->Release_Next_Ball();
+		else if (Platform_State == EPlatform_State::Laser)
+			AsConfig::Throw();  //!!! Надо сделать!
 }
 //------------------------------------------------------------------------------------------------------------
 bool AsPlatform::Hit_By(AFalling_Letter *falling_letter)
@@ -610,6 +653,39 @@ void AsPlatform::Act_For_Expanding_State()
 		else
 		{
 			Platform_State.Expanding = EPlatform_Substate_Expanding::Unknown;
+			Set_State(EPlatform_Substate_Regular::Normal);
+		}
+
+		Redraw_Platform();
+		break;
+
+	default:
+		AsConfig::Throw();
+	}
+}
+//------------------------------------------------------------------------------------------------------------
+void AsPlatform::Act_For_Laser_State()
+{
+	switch (Platform_State.Laser)
+	{
+	case EPlatform_Substate_Laser::Init:
+		if (Laser_Transformation_Step < Max_Laser_Transformation_Step)
+			++Laser_Transformation_Step;
+		else
+			Platform_State.Laser = EPlatform_Substate_Laser::Active;
+
+		Redraw_Platform();
+		break;
+
+	case EPlatform_Substate_Laser::Active:
+		break;
+
+	case EPlatform_Substate_Laser::Finalize:
+		if (Laser_Transformation_Step > 0)
+			--Laser_Transformation_Step;
+		else
+		{
+			Platform_State.Laser = EPlatform_Substate_Laser::Unknown;
 			Set_State(EPlatform_Substate_Regular::Normal);
 		}
 
@@ -944,10 +1020,10 @@ void AsPlatform::Draw_Expanding_Truss(HDC hdc, RECT &inner_rect, bool is_left)
 	int truss_x;
 	int truss_top_y, truss_low_y;
 	int truss_x_offset;
-	double extansion_ratio;  // [ 1.0 .. 0.0 ]
+	double extension_ratio;  // [ 1.0 .. 0.0 ]
 	const int scale = AsConfig::Global_Scale;
-	extansion_ratio = (Max_Expanding_Platform_Width - Expanding_Platform_Width) / (Max_Expanding_Platform_Width - Min_Expanding_Platform_Width);
-	truss_x_offset = (int)(6.0 * extansion_ratio * AsConfig::D_Global_Scale);
+	extension_ratio = (Max_Expanding_Platform_Width - Expanding_Platform_Width) / (Max_Expanding_Platform_Width - Min_Expanding_Platform_Width);
+	truss_x_offset = (int)(6.0 * extension_ratio * AsConfig::D_Global_Scale);
 
 	truss_x = inner_rect.left + 1;
 
@@ -970,6 +1046,145 @@ void AsPlatform::Draw_Expanding_Truss(HDC hdc, RECT &inner_rect, bool is_left)
 	MoveToEx(hdc, truss_x, truss_low_y, 0);
 	LineTo(hdc, truss_x - 4 * scale - 1, truss_top_y);
 	LineTo(hdc, truss_x - 8 * scale, truss_low_y);
+}
+//------------------------------------------------------------------------------------------------------------
+void AsPlatform::Draw_Laser_State(HDC hdc, RECT &paint_area)
+{// Рисуем лазерную платформу
+
+	HRGN region;
+	region = CreateRectRgnIndirect(&Platform_Rect);
+	SelectClipRgn(hdc, region);
+
+	// 1. Левое крыло
+	Draw_Laser_Wing(hdc, true);
+
+	// 2. Правое крыло
+	Draw_Laser_Wing(hdc, false);
+
+
+	// 3. Центральная часть
+	// 3.1. Левая нога
+	Draw_Laser_Leg(hdc, true);
+
+	// 3.2. Правая нога
+	Draw_Laser_Leg(hdc, false);
+
+
+	// 3.3. Кабина
+	Draw_Laser_Cabin(hdc);
+
+	SelectClipRgn(hdc, 0);
+	DeleteObject(region);
+}
+//------------------------------------------------------------------------------------------------------------
+void AsPlatform::Draw_Laser_Wing(HDC hdc, bool is_left)
+{// Рисуем крыло лазерной платформы
+
+	int x, y;
+	int x_offset;
+	const int scale = AsConfig::Global_Scale;
+	Platform_Circle_Color.Select(hdc);
+
+	x_offset = 7 * scale - 1;
+
+	if (is_left)
+		x = (int)(X_Pos * AsConfig::D_Global_Scale);
+	else
+	{
+		x = (int)(X_Pos * AsConfig::D_Global_Scale) + Normal_Width * scale - 1;
+		x_offset = -x_offset;
+	}
+
+	y = (AsConfig::Platform_Y_Pos + 1) * scale;
+	Ellipse(hdc, x, y, x + x_offset, y + 12 * scale - 1);
+
+	// 1.1. Перемычка
+	x_offset = 6 * scale - 1;
+
+	if (is_left)
+		x += 5 * scale;
+	else
+	{
+		x -= 5 * scale;
+		x_offset = -x_offset;
+	}
+
+	y += 1 * scale;
+	Rectangle(hdc, x, y, x + x_offset, y + 5 * scale - 1);
+
+	// 1.2. Пушка
+	Gun_Color.Select(hdc);
+
+	if (is_left)
+		x = (int)( (X_Pos + 3.0) * AsConfig::D_Global_Scale);
+	else
+		x = (int)(X_Pos * AsConfig::D_Global_Scale) + (Normal_Width - 4) * scale;
+
+	y = AsConfig::Platform_Y_Pos * scale;
+
+	MoveToEx(hdc, x + 1, y + 1, 0);
+	LineTo(hdc, x + 1, y + 3 * scale + 1);
+
+	// 1.3. Хвост
+	Ellipse(hdc, x - scale, y + 5 * scale + 1, x + 2 * scale - 1, y + 11 * scale);
+}
+//------------------------------------------------------------------------------------------------------------
+void AsPlatform::Draw_Laser_Leg(HDC hdc, bool is_left)
+{// Рисуем "ногу" лазерной платформы
+
+	int x, y;
+	int x_scale;
+	const int scale = AsConfig::Global_Scale;
+
+	Platform_Inner_Color.Select(hdc);
+
+	if (is_left)
+	{
+		x = (int)( (X_Pos + 6.0) * AsConfig::D_Global_Scale);
+		x_scale = scale;
+	}
+	else
+	{
+		x = (int)(X_Pos * AsConfig::D_Global_Scale) + (Normal_Width - 6) * scale - 1;
+		x_scale = -scale;
+	}
+
+	y = (AsConfig::Platform_Y_Pos + 3) * scale;
+
+	POINT left_leg_points[7] =
+	{
+		{ x, y }, { x + 2 * x_scale, y - 2 * scale }, { x + 4 * x_scale, y - 2 * scale }, { x + 4 * x_scale, y },
+		{ x + 2 * x_scale, y + 2 * scale }, { x + 2 * x_scale, y + 4 * scale }, { x, y + 4 * scale } 
+	};
+
+	Polygon(hdc, left_leg_points, 7);
+}
+//------------------------------------------------------------------------------------------------------------
+void AsPlatform::Draw_Laser_Cabin(HDC hdc)
+{// Рисуем кабину лазерной платформы
+
+	int x, y;
+	const int scale = AsConfig::Global_Scale;
+
+	// 1. Внешняя часть
+	Platform_Inner_Color.Select(hdc);
+
+	x = (int)( (X_Pos + 9.0) * AsConfig::D_Global_Scale);
+	y = (AsConfig::Platform_Y_Pos - 1) * scale;
+
+	Ellipse(hdc, x, y, x + 10 * scale - 1, y + 8 * scale - 1);
+
+	// 2. Среднее кольцо
+	AsConfig::BG_Color.Select(hdc);
+
+	x += scale;
+	Ellipse(hdc, x, y, x + 8 * scale - 1, y + 6 * scale - 1);
+
+	// 3. Внутренняя часть
+	AsConfig::White_Color.Select(hdc);
+	x += scale;
+	y += scale;
+	Ellipse(hdc, x, y, x + 6 * scale - 1, y + 4 * scale - 1);
 }
 //------------------------------------------------------------------------------------------------------------
 bool AsPlatform::Reflect_On_Circle(double next_x_pos, double next_y_pos, double platform_ball_x_offset, ABall *ball)
