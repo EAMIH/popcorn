@@ -43,6 +43,27 @@
     <Filter Include="Main">
       <UniqueIdentifier>{e597db87-8b54-4caf-aa23-9b0d3517d91e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Laser_Beam">
+      <UniqueIdentifier>{908c7581-2168-4b05-8ec7-934cb178e408}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tools">
+      <UniqueIdentifier>{956f05ec-f665-43d8-8e4d-48adb9c5c785}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Laser_Beam_Set">
+      <UniqueIdentifier>{12b52d72-d019-41d6-9d74-9991dbc296bc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform_Glue">
+      <UniqueIdentifier>{86d139f5-0c91-4255-953a-ef7987ddcb3e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform_Expanding">
+      <UniqueIdentifier>{0388d0f2-3a5f-4818-8ae2-356f5ccd59d2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform_State">
+      <UniqueIdentifier>{0928745a-7587-4ab2-9bfd-f834a3dc25c6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform_Laser">
+      <UniqueIdentifier>{b8b5f7d8-18b1-453b-95c7-cdd46edeb03c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -83,6 +104,27 @@
     </ClInclude>
     <ClInclude Include="Ball.h">
       <Filter>Ball</Filter>
+    </ClInclude>
+    <ClInclude Include="Laser_Beam.h">
+      <Filter>Laser_Beam</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools.h">
+      <Filter>Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="Laser_Beam_Set.h">
+      <Filter>Laser_Beam_Set</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform_State.h">
+      <Filter>Platform_State</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform_Glue.h">
+      <Filter>Platform_Glue</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform_Expanding.h">
+      <Filter>Platform_Expanding</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform_Laser.h">
+      <Filter>Platform_Laser</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -128,6 +170,27 @@
     </ClCompile>
     <ClCompile Include="Ball_Set.cpp">
       <Filter>Ball_Set</Filter>
+    </ClCompile>
+    <ClCompile Include="Laser_Beam.cpp">
+      <Filter>Laser_Beam</Filter>
+    </ClCompile>
+    <ClCompile Include="Tools.cpp">
+      <Filter>Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="Laser_Beam_Set.cpp">
+      <Filter>Laser_Beam_Set</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform_State.cpp">
+      <Filter>Platform_State</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform_Glue.cpp">
+      <Filter>Platform_Glue</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform_Expanding.cpp">
+      <Filter>Platform_Expanding</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform_Laser.cpp">
+      <Filter>Platform_Laser</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
